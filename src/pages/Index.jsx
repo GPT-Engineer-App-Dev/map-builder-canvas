@@ -46,7 +46,7 @@ const Index = () => {
       }));
 
       context.clearRect(0, 0, canvas.width, canvas.height);
-      drawShape(resizeRect.x, resizeRect.y, newWidth, newHeight);
+      drawShape(startPos.x, startPos.y, newWidth, newHeight);
     };
 
     const handleMouseUp = () => {
@@ -66,7 +66,7 @@ const Index = () => {
 
   return (
     <Container centerContent maxW="container.xl" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
-      <HStack spacing={4} mb={4} position="absolute" top={4} zIndex={1}>
+      <HStack spacing={4} mb={4} position="absolute" top={4} zIndex={10}>
         <Button onClick={() => setShape("square")}>Square</Button>
         <Button onClick={() => setShape("rectangle")}>Rectangle</Button>
         <Button onClick={() => setShape("circle")}>Circle</Button>
