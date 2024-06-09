@@ -5,22 +5,29 @@ const Index = () => {
   const canvasRef = useRef(null);
   const [shape, setShape] = useState("square");
   const [isResizing, setIsResizing] = useState(false);
-  const [resizeRect, setResizeRect] = useState(null);
+  const [shapes, setShapes] = useState([]);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
-    const drawShape = (x, y, width = 100, height = 50) => {
+    const drawShape = (x, y, width, height, shapeType) => {
       context.fillStyle = "blue";
-      if (shape === "square" || shape === "rectangle") {
+      if (shapeType === "square" || shapeType === "rectangle") {
         context.fillRect(x, y, width, height);
-      } else if (shape === "circle") {
+      } else if (shapeType === "circle") {
         context.beginPath();
         context.arc(x, y, width / 2, 0, 2 * Math.PI);
         context.fill();
       }
+    };
+
+    const redrawShapes = () => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      shapes.forEach(({ x, y, width, height, shapeType }) => {
+        drawShape(x, y, width, height, shapeType);
+      });
     };
 
     const handleMouseDown = (event) => {
@@ -30,10 +37,17 @@ const Index = () => {
 
       if (shape === "rectangle" || shape === "square") {
         setIsResizing(true);
-        setResizeRect({ x, y, width: 100, height: 50 });
         setStartPos({ x, y });
+        setShapes((prevShapes) => [
+          ...prevShapes,
+          { x, y, width: 0, height: 0, shapeType: shape },
+        ]);
       } else if (shape === "circle") {
-        drawShape(x, y, 100, 100);
+        setShapes((prevShapes) => [
+          ...prevShapes,
+          { x, y, width: 100, height: 100, shapeType: shape },
+        ]);
+        redrawShapes();
       }
     };
 
@@ -47,14 +61,15 @@ const Index = () => {
       const newWidth = x - startPos.x;
       const newHeight = y - startPos.y;
 
-      setResizeRect((prev) => ({
-        ...prev,
-        width: newWidth,
-        height: newHeight,
-      }));
+      setShapes((prevShapes) => {
+        const updatedShapes = [...prevShapes];
+        const currentShape = updatedShapes[updatedShapes.length - 1];
+        currentShape.width = newWidth;
+        currentShape.height = newHeight;
+        return updatedShapes;
+      });
 
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      drawShape(startPos.x, startPos.y, newWidth, newHeight);
+      redrawShapes();
     };
 
     const handleMouseUp = () => {
@@ -70,7 +85,7 @@ const Index = () => {
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isResizing, resizeRect]);
+  }, [shape, isResizing, shapes]);
 
   return (
     <Container centerContent maxW="container.xl" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
