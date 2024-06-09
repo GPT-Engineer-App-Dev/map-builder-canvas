@@ -9,6 +9,17 @@ const Index = () => {
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+      const addDefaultShapes = () => {
+        const defaultShapes = [
+          { x: 50, y: 50, width: 100, height: 100, shapeType: "square" },
+          { x: 200, y: 50, width: 150, height: 100, shapeType: "rectangle" },
+          { x: 400, y: 50, width: 100, height: 100, shapeType: "circle" },
+          { x: 50, y: 200, width: 100, height: 100, shapeType: "square" },
+          { x: 200, y: 200, width: 150, height: 100, shapeType: "rectangle" },
+          { x: 400, y: 200, width: 100, height: 100, shapeType: "circle" },
+        ];
+        setShapes(defaultShapes);
+      };
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
@@ -76,6 +87,9 @@ const Index = () => {
     const handleMouseUp = () => {
       setIsDrawing(false);
     };
+
+    addDefaultShapes();
+    redrawShapes();
 
     canvas.addEventListener("mousedown", handleMouseDown);
     canvas.addEventListener("mousemove", handleMouseMove);
