@@ -4,7 +4,7 @@ import { Container, Button, HStack } from "@chakra-ui/react";
 const Index = () => {
   const canvasRef = useRef(null);
   const [shape, setShape] = useState("square");
-  const [isResizing, setIsResizing] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
   const [shapes, setShapes] = useState([]);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
 
@@ -18,7 +18,7 @@ const Index = () => {
         context.fillRect(x, y, width, height);
       } else if (shapeType === "circle") {
         context.beginPath();
-        context.arc(x, y, width / 2, 0, 2 * Math.PI);
+        context.arc(x + width / 2, y + height / 2, width / 2, 0, 2 * Math.PI);
         context.fill();
       }
     };
@@ -35,24 +35,25 @@ const Index = () => {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      if (shape === "rectangle" || shape === "square") {
-        setIsResizing(true);
-        setStartPos({ x, y });
-        setShapes((prevShapes) => [
-          ...prevShapes,
-          { x, y, width: 0, height: 0, shapeType: shape },
-        ]);
-      } else if (shape === "circle") {
+      setIsDrawing(true);
+      setStartPos({ x, y });
+
+      if (shape === "circle") {
         setShapes((prevShapes) => [
           ...prevShapes,
           { x, y, width: 100, height: 100, shapeType: shape },
         ]);
         redrawShapes();
+      } else {
+        setShapes((prevShapes) => [
+          ...prevShapes,
+          { x, y, width: 0, height: 0, shapeType: shape },
+        ]);
       }
     };
 
     const handleMouseMove = (event) => {
-      if (!isResizing) return;
+      if (!isDrawing) return;
 
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
@@ -73,7 +74,7 @@ const Index = () => {
     };
 
     const handleMouseUp = () => {
-      setIsResizing(false);
+      setIsDrawing(false);
     };
 
     canvas.addEventListener("mousedown", handleMouseDown);
@@ -85,7 +86,7 @@ const Index = () => {
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [shape, isResizing, shapes]);
+  }, [shape, isDrawing, shapes]);
 
   return (
     <Container centerContent maxW="container.xl" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
