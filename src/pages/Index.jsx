@@ -14,7 +14,13 @@ const Index = () => {
 
     const drawShape = (x, y, width = 100, height = 50) => {
       context.fillStyle = "blue";
-      context.fillRect(x, y, width, height);
+      if (shape === "square" || shape === "rectangle") {
+        context.fillRect(x, y, width, height);
+      } else if (shape === "circle") {
+        context.beginPath();
+        context.arc(x, y, width / 2, 0, 2 * Math.PI);
+        context.fill();
+      }
     };
 
     const handleMouseDown = (event) => {
@@ -22,10 +28,12 @@ const Index = () => {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      if (shape === "rectangle") {
+      if (shape === "rectangle" || shape === "square") {
         setIsResizing(true);
         setResizeRect({ x, y, width: 100, height: 50 });
         setStartPos({ x, y });
+      } else if (shape === "circle") {
+        drawShape(x, y, 100, 100);
       }
     };
 
