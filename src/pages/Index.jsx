@@ -4,47 +4,69 @@ import { Container, Button, HStack } from "@chakra-ui/react";
 const Index = () => {
   const canvasRef = useRef(null);
   const [shape, setShape] = useState("square");
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeRect, setResizeRect] = useState(null);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
-    const drawShape = (x, y) => {
+    const drawShape = (x, y, width = 100, height = 50) => {
       context.fillStyle = "blue";
-      switch (shape) {
-        case "square":
-          context.fillRect(x, y, 50, 50);
-          break;
-        case "rectangle":
-          context.fillRect(x, y, 100, 50);
-          break;
-        case "circle":
-          context.beginPath();
-          context.arc(x, y, 25, 0, 2 * Math.PI);
-          context.fill();
-          break;
-        default:
-          break;
-      }
+      context.fillRect(x, y, width, height);
     };
 
-    const handleCanvasClick = (event) => {
+    const handleMouseDown = (event) => {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      drawShape(x, y);
+
+      if (shape === "rectangle") {
+        setIsResizing(true);
+        setResizeRect({ x, y, width: 100, height: 50 });
+        setStartPos({ x, y });
+      }
     };
 
-    canvas.addEventListener("click", handleCanvasClick);
+    const handleMouseMove = (event) => {
+      if (!isResizing) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const newWidth = x - startPos.x;
+      const newHeight = y - startPos.y;
+
+      setResizeRect((prev) => ({
+        ...prev,
+        width: newWidth,
+        height: newHeight,
+      }));
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      drawShape(resizeRect.x, resizeRect.y, newWidth, newHeight);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      canvas.removeEventListener("click", handleCanvasClick);
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [shape]);
+  }, [isResizing, resizeRect]);
 
   return (
     <Container centerContent maxW="container.xl" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
-      <HStack spacing={4} mb={4}>
+      <HStack spacing={4} mb={4} position="absolute" top={4} zIndex={1}>
         <Button onClick={() => setShape("square")}>Square</Button>
         <Button onClick={() => setShape("rectangle")}>Rectangle</Button>
         <Button onClick={() => setShape("circle")}>Circle</Button>
